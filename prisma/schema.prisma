@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+
+}
+
+datasource db {
+  provider = "postgresql"
+
+}
+
+
+
+model Cliente {
+  id         Int      @id @default(autoincrement())
+  nombre     String
+  telefono   String?
+  email      String?  @unique
+  direccion  String?
+  createdAt  DateTime @default(now())
+
+  ventas     Venta[]
+}
+
+model Proveedor {
+  id         Int      @id @default(autoincrement())
+  nombre     String
+  telefono   String?
+  email      String?
+  direccion  String?
+  createdAt  DateTime @default(now())
+
+  productos  Producto[]
+}
+
+model Categoria {
+  id         Int      @id @default(autoincrement())
+  nombre     String   @unique
+  createdAt  DateTime @default(now())
+
+  productos  Producto[]
+}
+
+model Producto {
+  id              Int         @id @default(autoincrement())
+  nombre          String
+  descripcion     String?
+  codigoBarras    String?     @unique
+  precioCompra    Float
+  precioVenta     Float
+  stock            Int        @default(0)
+  activo           Boolean    @default(true)
+  createdAt        DateTime   @default(now())
+
+  categoriaId      Int
+  categoria         Categoria @relation(fields: [categoriaId], references: [id])
+
+  proveedorId       Int?
+  proveedor         Proveedor? @relation(fields: [proveedorId], references: [id])
+
+  detalleVentas     DetalleVenta[]
+}
+
+model Venta {
+  id          Int             @id @default(autoincrement())
+  fecha       DateTime        @default(now())
+  total       Float
+  estado      EstadoVenta     @default(PENDIENTE)
+
+  clienteId   Int?
+  cliente     Cliente?        @relation(fields: [clienteId], references: [id])
+
+  detalles    DetalleVenta[]
+}
+
+model DetalleVenta {
+  id           Int       @id @default(autoincrement())
+  cantidad     Int
+  precio       Float
+  subtotal     Float
+
+  ventaId      Int
+  venta        Venta     @relation(fields: [ventaId], references: [id])
+
+  productoId   Int
+  producto     Producto  @relation(fields: [productoId], references: [id])
+}
+
+enum EstadoVenta {
+  PENDIENTE
+  PAGADA
+  CANCELADA
+}

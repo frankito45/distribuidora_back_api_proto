@@ -7,7 +7,7 @@ import categoriaRouter from './routers/categoria.routers'
 import ventasRouter from './routers/venta.routrers'
 
 const app = express();
-const whitelist = [' http://localhost:4200', 'https://midominio.com'];
+const whitelist = ['http://localhost:4200', 'https://midominio.com'];
 
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {

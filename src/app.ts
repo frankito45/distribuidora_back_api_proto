@@ -12,12 +12,15 @@ const whitelist = ['http://localhost:4200', 'https://midominio.com'];
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
     if (!origin || whitelist.includes(origin)) {
-      callback(null, true); // Permitir acceso
+      callback(null, true);
     } else {
       callback(new Error('No permitido por CORS'));
     }
-  }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE','PATHC'], // métodos permitidos
+  credentials: true // si necesitas cookies o headers de autorización
 };
+
 
 
 app.use(cors(corsOptions));

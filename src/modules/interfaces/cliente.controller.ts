@@ -13,8 +13,15 @@ export const getClientes = async(
     req:Request,
     res:Response
 ) => {
-    const result = await service.getClients()
-    return res.json(result)
+    try{
+
+        const result = await service.getClients()
+        return res.json(result)
+    }catch(error:any){
+        res.status(400).json({
+            mesagge: error.mesagge
+        })
+    }
 }
 
 
@@ -25,7 +32,7 @@ export const createCliente = async(
     
     const result = await service.createClient(req.body)
     try {
-        res.send(200).json(result)
+        res.status(200).json(result)
     }catch (error:any) {
         res.status(400).json({
             message: error.message

@@ -17,13 +17,13 @@ const corsOptions: CorsOptions = {
       callback(new Error('No permitido por CORS'));
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE','PATHC'], // métodos permitidos
+  methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'], // métodos permitidos
   credentials: true // si necesitas cookies o headers de autorización
 };
 
 
 
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

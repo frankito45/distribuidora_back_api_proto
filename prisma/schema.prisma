@@ -71,6 +71,9 @@ model Venta {
   total       Float
   estado      EstadoVenta     @default(PENDIENTE)
 
+  metodoPago  MetodoPago      @default(EFECTIVO)
+
+
   clienteId   Int?
   cliente     Cliente?        @relation(fields: [clienteId], references: [id])
 
@@ -94,4 +97,10 @@ enum EstadoVenta {
   PENDIENTE
   PAGADA
   CANCELADA
+}
+
+enum MetodoPago {
+  EFECTIVO
+  TRANSFERENCIA
+  TARJETA
 }

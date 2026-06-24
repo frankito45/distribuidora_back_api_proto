@@ -12,8 +12,15 @@ export const getProductos = async (
     req:Request,
     res:Response
 ) => {
-    const result = await service.getProductos()
-    return res.json(result)
+    try{
+
+        const result = await service.getProductos()
+        return res.json(result)
+    }catch(error:any){
+         res.status(400).json({
+            mesagge: error.mesagge
+        })
+    }
 }
 
 export const getProductoById = async(

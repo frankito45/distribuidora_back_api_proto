@@ -30,8 +30,8 @@ export const createCliente = async(
     res:Response,
 ) => {
     
-    const result = await service.createClient(req.body)
     try {
+    const result = await service.createClient(req.body)
         res.status(200).json(result)
     }catch (error:any) {
         res.status(400).json({

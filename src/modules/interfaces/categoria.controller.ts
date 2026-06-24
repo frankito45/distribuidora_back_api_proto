@@ -10,8 +10,15 @@ export const getCategoria = async(
     req:Request,
     res:Response
 ) => {
-    const result = await service.getCategoria()
-    return res.json(result)
+    try{
+
+        const result = await service.getCategoria()
+        return res.json(result)
+    }catch(error:any){
+         res.status(400).json({
+            mesagge: error.mesagge
+        })
+    }
 }
 export const getCategoriaId = async(
     req:Request,
@@ -27,11 +34,11 @@ export const getCategoriaId = async(
         }
         
         const result = await service.getCategoriaId(id)
-        res.send(200).json(result)
+        res.status(200).json(result)
 
     } catch (error:any) {
         
-        res.send(400).json({
+        res.status(400).json({
             message: error.message
         })
     }

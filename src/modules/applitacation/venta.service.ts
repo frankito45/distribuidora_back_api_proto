@@ -55,7 +55,7 @@ export class VentaService {
 
     }
     
-    async cambiarEstado(id:number, estado:"PAGADA"|"CANCELADA"){
+    async cambiarEstado(id:number, estado:"PAGADA"|"CANCELADA",metodoPago: "EFECTIVO" | "TRANSFERENCIA" | "TARJETA"){
         const venta = await this.ventaRepository.getId(id)
         if (!venta) {
             throw new Error("venta no encontrado");
@@ -68,19 +68,23 @@ export class VentaService {
 
         if (estado === "CANCELADA") {
 
-        for (const detalle of venta.detalles) {
+            for (const detalle of venta.detalles) {
 
-            await this.productoRepository.increment(
-            detalle.productoId,
-            detalle.cantidad
-            );
+                await this.productoRepository.increment(
+                detalle.productoId,
+                detalle.cantidad
+                );
+            }
+
         }
 
+        if (!["EFECTIVO", "TRANSFERENCIA", "TARJETA"].includes(metodoPago)) {
+            throw new Error("Método de pago inválido");
         }
 
         return this.ventaRepository.update(
         id,
-        { estado }
+        { estado:estado, metodoPago:metodoPago },
     );
 
     }

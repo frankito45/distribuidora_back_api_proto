@@ -19,7 +19,7 @@ export interface VentaRepository {
 
     update(
         id:number,
-        data:any
+        data:{estado:string, metodoPago:string}
     ): Promise<Venta>;
 
     delete(

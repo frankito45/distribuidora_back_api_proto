@@ -54,8 +54,8 @@ export const createVenta = async(
     req:Request,
     res:Response
 ) => {
-    const data = req.body
     try {
+        const data = req.body
         const result = await service.createVenta(data)
         return res.status(201).json(result)
     } catch (error:any) {
@@ -74,8 +74,9 @@ export const cambiarEstado = async(
         if (isNaN(id)) {
             throw new Error('id invalido')
         }
-        const data = req.body
-        const result = await service.cambiarEstado(id,data)
+        const estado = req.body.estado
+        const metodoPago =req.body.metodoPago
+        const result = await service.cambiarEstado(id,estado,metodoPago)
         return res.json(result)
 
     }catch(error:any){

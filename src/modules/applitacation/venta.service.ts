@@ -37,8 +37,8 @@ export class VentaService {
     }
 
     async createVenta(data:VentaInput){
-
-        const cliente = await this.clienteRepository.getId(data.clienteId)
+        const idCliente = Number(data.clienteId)
+        const cliente = await this.clienteRepository.getId(idCliente)
         if(!cliente){
             throw new Error("cliente inexistente");
             
@@ -47,7 +47,7 @@ export class VentaService {
 
         
         return this.ventaRepository.create({
-            clienteId: Number(data.clienteId),
+            clienteId: idCliente,
             total: 0,
             estado:"PENDIENTE",
             detalles: [] 

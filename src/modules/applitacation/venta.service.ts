@@ -47,7 +47,7 @@ export class VentaService {
 
         
         return this.ventaRepository.create({
-            clienteId: data.clienteId,
+            clienteId: Number(data.clienteId),
             total: 0,
             estado:"PENDIENTE",
             detalles: [] 
@@ -74,7 +74,6 @@ export class VentaService {
             detalle.productoId,
             detalle.cantidad
             );
-
         }
 
         }

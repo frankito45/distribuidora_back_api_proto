@@ -73,11 +73,14 @@ export const increment = async(
 ) => {
     try {
         const id = Number(req.params.id)
-        const data = req.body;
+        const data = req.body.increment;
+        console.log('consolaa',req.body.increment)
         if (isNaN(id)) {
             throw new Error("id no puede ser nulo");
-            
         }
+        
+
+
         const result = await service.incrementeStock(id,data)
         return res.json(result)
 

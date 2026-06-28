@@ -4,16 +4,20 @@ import { VentaRepository } from "../domain/venta.repository";
 
 export class PrismaVentaRepository implements VentaRepository{
     
-    async getAll() {
+    async getAll(params: {skip:number,take:number}) {
         return prisma.venta.findMany({
+            skip:params.skip,
+            take:params.take,
             include: {
+                
                 cliente: true,
                 detalles: {
                     include: {
                         producto: true
                     }
                 }
-            }
+            },
+            orderBy: { id: "asc" }
         });
     }
 

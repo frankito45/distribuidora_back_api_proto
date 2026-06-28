@@ -23,8 +23,8 @@ export class VentaService {
         private clienteRepository: ClienteRepository
     ){}
 
-    async getVentas(){
-        return this.ventaRepository.getAll()
+    async getVentas(params:any){
+        return this.ventaRepository.getAll(params)
     }
 
     async getVentaId(id:number){

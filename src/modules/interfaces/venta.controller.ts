@@ -3,6 +3,8 @@ import { PrismaVentaRepository } from "../infrastruture/prisma-Venta.repository"
 import { VentaService } from "../applitacation/venta.service";
 import { PrismaProductoRepository } from "../infrastruture/prisma-Producto.repository";
 import { PrismaClientRepository } from "../infrastruture/prisma-Cliente.repository";
+import { skip } from "node:test";
+import { Param } from "@prisma/client/runtime/client";
 
 const repository = new  PrismaVentaRepository()
 const productoRepository = new PrismaProductoRepository()
@@ -14,8 +16,13 @@ export const getVentas = async(
     res:Response
 ) => {
     try{
+        const skip = parseInt(req.query.skip as string) || 0;
+        const take = parseInt(req.query.take as string) || 10;
+
+        const params = {skip:skip,take:take}
+
         const result =
-            await service.getVentas();
+            await service.getVentas(params);
 
         return res.json(result);
 

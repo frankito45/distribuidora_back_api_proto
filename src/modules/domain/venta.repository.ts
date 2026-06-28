@@ -7,7 +7,11 @@ export type VentaConDetalles =
 
 export interface VentaRepository {
 
-    getAll(): Promise<VentaConDetalles[]>;
+    getAll(params: 
+        {
+            skip:number, 
+            take:number
+        }): Promise<VentaConDetalles[]>;
 
     getId(
         id:number
@@ -19,7 +23,7 @@ export interface VentaRepository {
 
     update(
         id:number,
-        data:{estado:string, metodoPago:string}
+        data:any
     ): Promise<Venta>;
 
     delete(

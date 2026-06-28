@@ -27,6 +27,10 @@ export class VentaService {
         return this.ventaRepository.getAll(params)
     }
 
+    async getcountEstado(){
+        return this.ventaRepository.countEstadoPendiente()
+    }
+
     async getVentaId(id:number){
         const venta = await this.ventaRepository.getId(id)
         

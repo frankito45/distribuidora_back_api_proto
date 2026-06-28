@@ -1,4 +1,4 @@
-import { Venta } from "@prisma/client";
+import { EstadoVenta, Venta } from "@prisma/client";
 import prisma from "../../db/prisma";
 import { VentaRepository } from "../domain/venta.repository";
 
@@ -20,6 +20,46 @@ export class PrismaVentaRepository implements VentaRepository{
             orderBy: { id: "asc" }
         });
     }
+    // 
+    async getFilterAll(estado:any){
+        return prisma.venta.findMany({
+            where:{
+                estado: estado
+            },
+            include:{
+                cliente:true,
+                detalles:{
+                    include: {
+                        producto:true
+                    }
+                }
+            }                
+        })
+    }
+    // 
+    async getFilterEstado(estado:any){
+        return prisma.venta.findMany({
+            where:{
+                estado: estado
+            },
+            include:{
+                cliente:true,
+                detalles:{
+                    include: {
+                        producto:true
+                    }
+                }
+            }                
+        })
+    }
+
+    async countEstadoPendiente(){
+        return prisma.venta.count({
+            where: {estado:"PENDIENTE"}
+        })
+    }
+
+
 
     async getId(id: number) {
         return prisma.venta.findUnique({

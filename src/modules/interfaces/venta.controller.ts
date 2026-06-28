@@ -35,6 +35,27 @@ export const getVentas = async(
     }
 }
 
+export const countPendiente = async(
+    req:Request,
+    res:Response
+) => {
+    try{
+        const result = await service.getcountEstado();
+
+        return res.json(result);
+
+    }catch(error:any){
+
+        return res.status(500).json({
+            message:error.message
+        });
+
+    }
+
+}
+
+
+
 export const getVentaById = async(
     req:Request,
     res:Response

@@ -13,6 +13,9 @@ export interface VentaRepository {
             take:number
         }): Promise<VentaConDetalles[]>;
 
+    getFilterAll(dato:any): Promise<VentaConDetalles[]>
+    countEstadoPendiente(): Promise<number>
+
     getId(
         id:number
     ): Promise<VentaConDetalles | null>;

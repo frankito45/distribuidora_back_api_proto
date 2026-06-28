@@ -42,7 +42,7 @@ export const countPendiente = async(
     try{
         const result = await service.getcountEstado();
 
-        return res.json(result);
+        return res.json({result});
 
     }catch(error:any){
 

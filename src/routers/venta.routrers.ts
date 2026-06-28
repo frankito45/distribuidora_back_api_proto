@@ -6,7 +6,7 @@ const router = Router()
 
 router.get('',getVentas)
 
-router.get('estado/count',countPendiente)
+router.get('/estado/count',countPendiente)
 
 router.get('/:id',getVentaById)
 router.post('',createVenta)

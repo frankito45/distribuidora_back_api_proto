@@ -169,8 +169,8 @@ export class PrismaVentaRepository implements VentaRepository{
 
     // Usar transacción para asegurar consistencia
     await prisma.$transaction([
-        prisma.detalleVenta.delete({
-        where: { id: detalle.id } // eliminamos el detalle específico
+        prisma.detalleVenta.deleteMany({
+        where: { ventaId, productoId } // eliminamos el detalle específico
         }),
         prisma.producto.update({
         where: { id: productoId },

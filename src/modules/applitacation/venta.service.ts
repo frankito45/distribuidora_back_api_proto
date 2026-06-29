@@ -173,9 +173,7 @@ export class VentaService {
         }
         console.log(venta.estado)
 
-        if(venta.estado !== 'PENDIENTE'){
-            throw new Error('ventea no puede estar Cancelada | Pagada ')
-        }
+
         return await this.ventaRepository.eliminarProducto(idVenta,productoId)
     }
     // filtro por dia

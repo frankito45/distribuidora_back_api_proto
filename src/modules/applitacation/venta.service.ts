@@ -1,5 +1,5 @@
 
-import { Producto } from "@prisma/client";
+import { EstadoVenta, Producto } from "@prisma/client";
 import { ClienteRepository } from "../domain/cliente.repository";
 import { ProductoRepository } from "../domain/producto.repositoy";
 import { VentaRepository } from "../domain/venta.repository";
@@ -172,7 +172,7 @@ export class VentaService {
             throw new Error("Venta no encontrada");
         }
 
-        if(venta.estado !== "PENDIENTE"){
+        if(venta.estado !== EstadoVenta.PENDIENTE){
             throw new Error('ventea no puede estar Cancelada | Pagada ')
         }
         return await this.ventaRepository.eliminarProducto(idVenta,productoId)

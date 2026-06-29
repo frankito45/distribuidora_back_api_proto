@@ -30,7 +30,7 @@ export class VentaService {
     async getVentasPendientes(){
         return this.ventaRepository.getFilterPendiente()
     }
-    
+
     async getcountEstado(){
         return this.ventaRepository.countEstadoPendiente()
     }
@@ -175,7 +175,6 @@ export class VentaService {
         if(venta.estado !== "PENDIENTE"){
             throw new Error('ventea no puede estar Cancelada | Pagada ')
         }
-
         return await this.ventaRepository.eliminarProducto(idVenta,productoId)
     }
     // filtro por dia

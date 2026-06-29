@@ -1,6 +1,7 @@
 import { EstadoVenta, Venta } from "@prisma/client";
 import prisma from "../../db/prisma";
 import { VentaRepository } from "../domain/venta.repository";
+import { promises } from "node:dns";
 
 export class PrismaVentaRepository implements VentaRepository{
     
@@ -156,15 +157,31 @@ export class PrismaVentaRepository implements VentaRepository{
         });
     }
 
-    async eliminarProducto(ventaId: number, productoId: number): Promise<void> {
-        await prisma.detalleVenta.delete({
-            where: {
-                id: ventaId,
-                productoId: productoId
-            }
-        })
+    async eliminarProducto(ventaId: number, productoId: number) {
+    // Buscar el detalle para saber cuántas unidades se agregaron
+    const detalle = await prisma.detalleVenta.findFirst({
+        where: { ventaId, productoId }
+    });
+
+    if (!detalle) {
+        throw new Error("El producto no existe en esta venta");
     }
 
+    // Usar transacción para asegurar consistencia
+    await prisma.$transaction([
+        prisma.detalleVenta.delete({
+        where: { id: detalle.id } // eliminamos el detalle específico
+        }),
+        prisma.producto.update({
+        where: { id: productoId },
+        data: {
+            stock: {
+            increment: detalle.cantidad // devolvemos la cantidad al stock
+            }
+        }
+        })
+    ]);
+    }
 
 
     async recalcularTotal(ventaId: number) {

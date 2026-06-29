@@ -27,6 +27,10 @@ export class VentaService {
         return this.ventaRepository.getAll(params)
     }
 
+    async getVentasPendientes(){
+        return this.ventaRepository.getFilterPendiente()
+    }
+    
     async getcountEstado(){
         return this.ventaRepository.countEstadoPendiente()
     }
@@ -160,10 +164,29 @@ export class VentaService {
             ventaId
         );
     }      
+    //eliminar producto 
+    async desAgregarProducto(ventaId:number,productoId:number){
+        const idVenta = ventaId
+        const venta = await this.ventaRepository.getId(idVenta)
+        if (!venta) {
+            throw new Error("Venta no encontrada");
+        }
+
+        if(venta.estado !== "PENDIENTE"){
+            throw new Error('ventea no puede estar Cancelada | Pagada ')
+        }
+
+        return await this.ventaRepository.eliminarProducto(idVenta,productoId)
+    }
+    // filtro por dia
+    async filterFecha(day:any){
+        if(!day){
+            throw new Error('fecha no puede ser vacio')
+        }
+        return await this.ventaRepository.getFilterAll(day)
+    }
         
-        
-        
-    
+
     async deleteVenta(id:number){
         const venta = await this.ventaRepository.getId(id)
         

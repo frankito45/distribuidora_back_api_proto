@@ -7,13 +7,16 @@ export type VentaConDetalles =
 
 export interface VentaRepository {
 
-    getAll(params: 
-        {
+    getAll(
+        params:{
             skip:number, 
             take:number
         }): Promise<VentaConDetalles[]>;
 
     getFilterAll(dato:any): Promise<VentaConDetalles[]>
+
+    getFilterPendiente(): Promise<VentaConDetalles[]>
+    
     countEstadoPendiente(): Promise<number>
 
     getId(
@@ -48,6 +51,11 @@ export interface VentaRepository {
         cantidad: number,
         precio: number
     ): Promise<void>;
+
+    eliminarProducto(
+        ventaId:number,
+        productoId:number
+    ): Promise<void>
 
 
     recalcularTotal(ventaId: number): Promise<void>;

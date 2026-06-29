@@ -20,11 +20,18 @@ export class PrismaVentaRepository implements VentaRepository{
             orderBy: { id: "asc" }
         });
     }
-    // 
-    async getFilterAll(estado:any){
+    // obtener por dia
+    async getFilterAll(dato:any){
+        const inicio = new Date(dato);
+        inicio.setHours(0,0,0,0)
+        const fin = new Date(dato);
+        fin.setHours(23,59,59,999)
         return prisma.venta.findMany({
             where:{
-                estado: estado
+                fecha: {
+                    gte: inicio,
+                    lt: fin
+                }
             },
             include:{
                 cliente:true,
@@ -33,14 +40,15 @@ export class PrismaVentaRepository implements VentaRepository{
                         producto:true
                     }
                 }
-            }                
+            },
+            orderBy: {fecha: "asc"}                
         })
     }
     // 
-    async getFilterEstado(estado:any){
+    async getFilterPendiente(){
         return prisma.venta.findMany({
             where:{
-                estado: estado
+                estado: "PENDIENTE"
             },
             include:{
                 cliente:true,
@@ -148,6 +156,15 @@ export class PrismaVentaRepository implements VentaRepository{
         });
     }
 
+    async eliminarProducto(ventaId: number, productoId: number): Promise<void> {
+        await prisma.detalleVenta.delete({
+            where: {
+                id: ventaId,
+                productoId: productoId
+            }
+        })
+    }
+
 
 
     async recalcularTotal(ventaId: number) {
@@ -162,9 +179,6 @@ export class PrismaVentaRepository implements VentaRepository{
             data: { total }
         });
     }
-
-
-
 
 
 }

@@ -3,8 +3,7 @@ import { PrismaVentaRepository } from "../infrastruture/prisma-Venta.repository"
 import { VentaService } from "../applitacation/venta.service";
 import { PrismaProductoRepository } from "../infrastruture/prisma-Producto.repository";
 import { PrismaClientRepository } from "../infrastruture/prisma-Cliente.repository";
-import { skip } from "node:test";
-import { Param } from "@prisma/client/runtime/client";
+import { resourceUsage } from "node:process";
 
 const repository = new  PrismaVentaRepository()
 const productoRepository = new PrismaProductoRepository()
@@ -32,6 +31,42 @@ export const getVentas = async(
             message:error.message
         });
 
+    }
+}
+
+export const getDay = async(
+    req:Request,
+    res: Response
+) => {
+  try {
+    const { day } = req.query; // se espera ?day=2026-06-28
+
+    if (!day) {
+      return res.status(400).json({ message: "La fecha no puede ser vacía" });
+    }
+
+    // convertir string a Date
+    const fecha = new Date(day as string);
+
+    const ventas = await service.filterFecha(fecha);
+
+    return res.json({ ventas });
+  } catch (error: any) {
+    return res.status(500).json({ message: error.message });
+  }
+}
+
+export const getFilterPendiente = async(
+    req:Request,
+    res:Response
+) => {
+    try{
+        const result = await service.getVentasPendientes()
+        return res.json(result)
+    }catch(error:any){
+        return res.status(500).json({
+            message: error.message
+        })
     }
 }
 
@@ -143,6 +178,26 @@ export const agregarProductos = async (
         });
     }
 };
+
+
+export const desAgregarProducto = async (req: Request, res: Response) => {
+  try {
+    const ventaId = Number(req.params.ventaId);
+    const productoId = Number(req.params.productoId);
+
+    if (isNaN(ventaId)) throw new Error("VentaId no puede ser nulo");
+    if (isNaN(productoId)) throw new Error("ProductoId no puede ser nulo");
+
+    const result = await service.desAgregarProducto(ventaId, productoId);
+    return res.json(result);
+  } catch (error: any) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+
+
+
 
 
 // export const deleteVenta = async(

@@ -171,8 +171,9 @@ export class VentaService {
         if (!venta) {
             throw new Error("Venta no encontrada");
         }
+        console.log(venta.estado)
 
-        if(venta.estado !== EstadoVenta.PENDIENTE){
+        if(venta.estado !== 'PENDIENTE'){
             throw new Error('ventea no puede estar Cancelada | Pagada ')
         }
         return await this.ventaRepository.eliminarProducto(idVenta,productoId)

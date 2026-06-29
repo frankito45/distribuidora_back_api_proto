@@ -55,7 +55,7 @@ export interface VentaRepository {
     eliminarProducto(
         ventaId:number,
         productoId:number
-    ): Promise<void>
+    ): Promise<any>
 
 
     recalcularTotal(ventaId: number): Promise<void>;

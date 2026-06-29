@@ -157,32 +157,38 @@ export class PrismaVentaRepository implements VentaRepository{
         });
     }
 
-    async eliminarProducto(ventaId: number, productoId: number) {
-    // Buscar el detalle para saber cuántas unidades se agregaron
-    const detalle = await prisma.detalleVenta.findFirst({
-        where: { ventaId, productoId }
-    });
+async eliminarProducto(ventaId: number, productoId: number) {
+  // Buscar el detalle para saber cuántas unidades se agregaron
+  const detalle = await prisma.detalleVenta.findFirst({
+    where: { ventaId, productoId }
+  });
 
-    if (!detalle) {
-        throw new Error("El producto no existe en esta venta");
-    }
+  if (!detalle) {
+    throw new Error("El producto no existe en esta venta");
+  }
 
-    // Usar transacción para asegurar consistencia
-    await prisma.$transaction([
+  // Usar transacción para asegurar consistencia
+  const [deleted, updated] = await prisma.$transaction([
     prisma.detalleVenta.deleteMany({
-        where: { ventaId, productoId }
+      where: { ventaId, productoId }
     }),
     prisma.producto.update({
-        where: { id: productoId },
-        data: {
+      where: { id: productoId },
+      data: {
         stock: {
-            increment: detalle.cantidad
+          increment: detalle.cantidad
         }
-        }
+      }
     })
-    ]);
+  ]);
 
-    }
+  // Devolver resultado útil al frontend
+  return {
+    deletedCount: deleted.count,
+    productoActualizado: updated
+  };
+}
+
 
 
     async recalcularTotal(ventaId: number) {

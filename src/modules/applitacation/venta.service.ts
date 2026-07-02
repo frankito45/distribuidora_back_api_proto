@@ -1,5 +1,5 @@
 
-import { EstadoVenta, Producto } from "@prisma/client";
+import { EstadoVenta, MetodoPago, Producto } from "@prisma/client";
 import { ClienteRepository } from "../domain/cliente.repository";
 import { ProductoRepository } from "../domain/producto.repositoy";
 import { VentaRepository } from "../domain/venta.repository";
@@ -51,14 +51,14 @@ export class VentaService {
             throw new Error("cliente inexistente");
             
         }
-
-
         
         return this.ventaRepository.create({
             clienteId: idCliente,
             total: 0,
             estado:"PENDIENTE",
-            detalles: [] 
+            detalles: [],
+            pagos: [],
+
         })
 
     }

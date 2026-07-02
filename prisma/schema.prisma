@@ -66,19 +66,32 @@ model Producto {
 }
 
 model Venta {
-  id          Int             @id @default(autoincrement())
-  fecha       DateTime        @default(now())
+  id          Int      @id @default(autoincrement())
+  fecha       DateTime @default(now())
+
   total       Float
-  estado      EstadoVenta     @default(PENDIENTE)
-
-  metodoPago  MetodoPago      @default(EFECTIVO)
-
+  estado      EstadoVenta @default(PENDIENTE)
 
   clienteId   Int?
-  cliente     Cliente?        @relation(fields: [clienteId], references: [id])
+  cliente     Cliente? @relation(fields: [clienteId], references: [id])
 
   detalles    DetalleVenta[]
+
+  pagos       Pago[]
 }
+
+model Pago {
+
+  id          Int @id @default(autoincrement())
+
+  monto       Float
+
+  metodo      MetodoPago
+
+  ventaId     Int
+  venta       Venta @relation(fields: [ventaId], references: [id])
+} 
+
 
 model DetalleVenta {
   id           Int       @id @default(autoincrement())
@@ -102,5 +115,5 @@ enum EstadoVenta {
 enum MetodoPago {
   EFECTIVO
   TRANSFERENCIA
-  TARJETA
+  CUENTA_CORRIENTE
 }

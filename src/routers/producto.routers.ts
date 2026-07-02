@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getProductos, createProducto, getProductoById,deleteProducto,updateProducto, increment, buscarProducto } from '../modules/interfaces/producto.controller';;
+import { getProductos, createProducto, getProductoById,deleteProducto,updateProducto, increment, buscarProducto, decrement } from '../modules/interfaces/producto.controller';;
 
 const router = Router();
 
@@ -9,6 +9,7 @@ router.get('/:id', getProductoById);
 router.patch('/:id', updateProducto);
 router.post('/', createProducto);
 router.patch('/increment/:id', increment);
+router.patch('/decrement/:id',decrement)
 router.delete('/:id', deleteProducto);
 
 

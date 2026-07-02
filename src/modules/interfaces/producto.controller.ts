@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { ProductoService } from "../applitacation/producto.service"
 import { PrismaProductoRepository } from "../infrastruture/prisma-Producto.repository"
 import { Extensions } from "@prisma/client/runtime/client";
+import { resourceUsage } from "node:process";
 
 const repository = new PrismaProductoRepository()
 
@@ -89,6 +90,30 @@ export const increment = async(
             mesagge: error.message
         })
     }
+}
+
+export const decrement = async(
+    req:Request,
+    res:Response
+) => {
+    try {
+    const id = Number(req.params.id)
+    const data = req.body.decrement;
+    if(isNaN(id)){
+        throw new Error("id no puede ser nulo")
+    }
+    
+    const result = service.decrementStock(id,data)
+    return res.json(result)
+
+    } catch (error:any) {
+        if(error){
+            res.status(400).json({
+                message: error.message
+            })
+        }
+    }
+    
 }
 
 export const updateProducto = async(

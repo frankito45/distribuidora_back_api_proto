@@ -138,7 +138,7 @@ export const cambiarEstado = async(
             throw new Error('id invalido')
         }
         const estado = req.body.estado
-        const metodoPago =req.body.metodoPago
+        const metodoPago = req.body.metodoPago
         const result = await service.cambiarEstado(id,estado,metodoPago)
         return res.json(result)
 
@@ -148,6 +148,7 @@ export const cambiarEstado = async(
         })
     }
 }
+
 
 export const agregarProductos = async (
     req: Request,
@@ -178,7 +179,6 @@ export const agregarProductos = async (
         });
     }
 };
-
 
 export const desAgregarProducto = async (req: Request, res: Response) => {
   try {

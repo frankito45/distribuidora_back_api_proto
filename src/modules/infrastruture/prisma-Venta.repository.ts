@@ -157,6 +157,7 @@ export class PrismaVentaRepository implements VentaRepository{
         });
     }
 
+// eliminar producto de detalles
 async eliminarProducto(ventaId: number, productoId: number) {
   // Buscar el detalle para saber cuántas unidades se agregaron
   const detalle = await prisma.detalleVenta.findFirst({
@@ -168,10 +169,11 @@ async eliminarProducto(ventaId: number, productoId: number) {
   }
 
   // Usar transacción para asegurar consistencia
-  const [deleted, updated] = await prisma.$transaction([
+  const [productoActualizado, VentaActualizada] = await prisma.$transaction([
     prisma.detalleVenta.deleteMany({
       where: { ventaId, productoId }
     }),
+
     prisma.producto.update({
       where: { id: productoId },
       data: {
@@ -179,13 +181,23 @@ async eliminarProducto(ventaId: number, productoId: number) {
           increment: detalle.cantidad
         }
       }
+    }),
+    
+    prisma.venta.update({
+        where: {id: ventaId},
+        data: {
+            total: {
+                decrement: detalle.subtotal
+            }
+        }
     })
   ]);
 
+
   // Devolver resultado útil al frontend
   return {
-    deletedCount: deleted.count,
-    productoActualizado: updated
+    productoActualizado,
+    VentaActualizada
   };
 }
 

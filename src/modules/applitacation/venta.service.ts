@@ -3,6 +3,7 @@ import { EstadoVenta, MetodoPago, Producto } from "@prisma/client";
 import { ClienteRepository } from "../domain/cliente.repository";
 import { ProductoRepository } from "../domain/producto.repositoy";
 import { VentaRepository } from "../domain/venta.repository";
+import prisma from "../../db/prisma";
 
 type DetalleVentaInput = {
     producto:number;
@@ -97,73 +98,103 @@ export class VentaService {
 
     }
 
-    async agregarProducto(ventaId:number,detalles:DetalleVentaInput){
-        const venta = await this.ventaRepository.getId(ventaId)
+    async agregarProducto(ventaId: number, detalles: DetalleVentaInput) {
+    return await prisma.$transaction(async (tx) => {
 
-        if (!venta) {
-            throw new Error("venta no encontrado");
-            
-        }
-        if(venta.estado !== "PENDIENTE"){
-            throw new Error(
-                "Solo se pueden modificar ventas pendientes"
-            );
-        }
+        const venta = await tx.venta.findUnique({
+        where: { id: ventaId },
+        include: { detalles: true }
+        });
 
-        const producto = await this.productoRepository.getId(detalles.producto)
+        if (!venta) throw new Error("venta no encontrado");
 
-        if (!producto) {
-            throw new Error("producto no encontrado");
-        }
-       if (detalles.cantidad <= 0) {
-            throw new Error(
-            "la cantidad debe ser mayor a cero"
-            );
+        if (venta.estado !== "PENDIENTE") {
+        throw new Error("Solo se pueden modificar ventas pendientes");
         }
 
-          // Validar stock disponible
+        const producto = await tx.producto.findUnique({
+        where: { id: detalles.producto }
+        });
+
+        if (!producto) throw new Error("producto no encontrado");
+
+        if (detalles.cantidad <= 0) {
+        throw new Error("la cantidad debe ser mayor a cero");
+        }
+
         if (producto.stock < detalles.cantidad) {
-            throw new Error(
-            `Stock insuficiente. Disponible: ${producto.stock}`
-            );
+        throw new Error(`Stock insuficiente. Disponible: ${producto.stock}`);
         }
 
-        // 
+        const subtotalNuevo = producto.precioVenta * detalles.cantidad;
+
         const detalleExistente = venta.detalles.find(
-            d => d.productoId === producto.id
+        d => d.productoId === producto.id
         );
+
+        let cambioTotal = 0;
+
+        // 1. crear o actualizar detalle
         if (detalleExistente) {
-            // 4A. actualizar cantidad
-            await this.ventaRepository.actualizarDetalleCantidad(
-                detalleExistente.id,
-                detalleExistente.cantidad + detalles.cantidad,
-                producto.precioVenta
-            );
-            
+
+        const nuevaCantidad = detalleExistente.cantidad + detalles.cantidad;
+        const nuevoSubtotal = nuevaCantidad * producto.precioVenta;
+
+        await tx.detalleVenta.update({
+            where: { id: detalleExistente.id },
+            data: {
+            cantidad: nuevaCantidad,
+            subtotal: nuevoSubtotal
+            }
+        });
+
+        cambioTotal = subtotalNuevo; // solo sumás lo nuevo
+
         } else {
-            // 4B. crear nuevo detalle
-            await this.ventaRepository.agregarDetalles(ventaId, {
-                productoId: producto.id,
-                cantidad: detalles.cantidad,
-                precio: producto.precioVenta,
-                subtotal: producto.precioVenta * detalles.cantidad
-            });
+
+        await tx.detalleVenta.create({
+            data: {
+            ventaId,
+            productoId: producto.id,
+            cantidad: detalles.cantidad,
+            precio: producto.precioVenta,
+            subtotal: subtotalNuevo
+            }
+        });
+
+        cambioTotal = subtotalNuevo;
         }
-        
-        // Reservar stock inmediatamente
-        await this.productoRepository.decrement(
-            producto.id,
-            detalles.cantidad
-        );
 
-        await this.ventaRepository.recalcularTotal(
-            ventaId
-        );
+        // 2. actualizar stock (ATÓMICO)
+        await tx.producto.update({
+        where: { id: producto.id },
+        data: {
+            stock: {
+            decrement: detalles.cantidad
+            }
+        }
+        });
 
-        return await this.ventaRepository.getId(
-            ventaId
-        );
-    }      
+        // 3. actualizar total incremental (MUCHO MÁS RÁPIDO)
+        await tx.venta.update({
+        where: { id: ventaId },
+        data: {
+            total: {
+            increment: cambioTotal
+            }
+        }
+        });
+
+        // 4. devolver venta actualizada
+        return tx.venta.findUnique({
+        where: { id: ventaId },
+        include: {
+            cliente: true,
+            detalles: { include: { producto: true } }
+        }
+        });
+    });
+    }
     //eliminar producto 
     async desAgregarProducto(ventaId:number,productoId:number){
         const idVenta = ventaId

@@ -157,49 +157,50 @@ export class PrismaVentaRepository implements VentaRepository{
         });
     }
 
+
 // eliminar producto de detalles
-async eliminarProducto(ventaId: number, productoId: number) {
-  // Buscar el detalle para saber cuántas unidades se agregaron
-  const detalle = await prisma.detalleVenta.findFirst({
-    where: { ventaId, productoId }
-  });
+    async eliminarProducto(ventaId: number, productoId: number) {
+            // Buscar el detalle para saber cuántas unidades se agregaron
+            const detalle = await prisma.detalleVenta.findFirst({
+                where: { ventaId, productoId }
+            });
 
-  if (!detalle) {
-    throw new Error("El producto no existe en esta venta");
-  }
+            if (!detalle) {
+                throw new Error("El producto no existe en esta venta");
+    }
 
-  // Usar transacción para asegurar consistencia
-  const [productoActualizado, VentaActualizada] = await prisma.$transaction([
-    prisma.detalleVenta.deleteMany({
-      where: { ventaId, productoId }
-    }),
+    // Usar transacción para asegurar consistencia
+    const [productoActualizado, VentaActualizada] = await prisma.$transaction([
+        prisma.detalleVenta.deleteMany({
+        where: { ventaId, productoId }
+        }),
 
-    prisma.producto.update({
-      where: { id: productoId },
-      data: {
-        stock: {
-          increment: detalle.cantidad
-        }
-      }
-    }),
-    
-    prisma.venta.update({
-        where: {id: ventaId},
+        prisma.producto.update({
+        where: { id: productoId },
         data: {
-            total: {
-                decrement: detalle.subtotal
+            stock: {
+            increment: detalle.cantidad
             }
         }
-    })
-  ]);
+        }),
+
+        prisma.venta.update({
+            where: {id: ventaId},
+            data: {
+                total: {
+                    decrement: detalle.subtotal
+                }
+            }
+        })
+    ]);
 
 
-  // Devolver resultado útil al frontend
-  return {
-    productoActualizado,
-    VentaActualizada
-  };
-}
+    // Devolver resultado útil al frontend
+    return {
+        productoActualizado,
+        VentaActualizada
+    };
+    }
 
 
 
@@ -218,3 +219,4 @@ async eliminarProducto(ventaId: number, productoId: number) {
 
 
 }
+

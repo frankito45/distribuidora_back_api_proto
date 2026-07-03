@@ -18,12 +18,12 @@ export const pagar = async (
              throw new Error("venta no puede ser nula");   
         }
 
-        const pago = req.body.pagos
+        const { pagos } = req.body;
 
-        if (!pago) {
+        if (!pagos) {
              throw new Error("pago no puede ser nulo");
         }
-        const result = await service.crearPago(id,pago)
+        const result = await service.crearPago(id,pagos)
         return res.json(result)
 
 

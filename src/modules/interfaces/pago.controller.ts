@@ -12,12 +12,13 @@ export const pagar = async (
     res:Response
 ) => {
     try{
+        
         const id = Number(req.params.id)
         if (isNaN(id)) {
              throw new Error("venta no puede ser nula");   
         }
 
-        const pago = req.body
+        const pago = req.body.pago
 
         if (!pago) {
              throw new Error("pago no puede ser nulo");

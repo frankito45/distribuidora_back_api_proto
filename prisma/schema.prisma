@@ -21,6 +21,7 @@ model Cliente {
   telefono   String?
   email      String?  @unique
   direccion  String?
+  barrio     String?
   createdAt  DateTime @default(now())
 
   ventas     Venta[]

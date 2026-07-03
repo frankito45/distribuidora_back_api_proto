@@ -91,6 +91,7 @@ export class ProductoService {
 
     async decrementStock(id: number, cantidad: number){
         const producto = await this.repository.getId(id)
+        
 
         if(!producto){
             throw new Error('producto no encontrado')

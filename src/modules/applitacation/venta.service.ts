@@ -1,4 +1,3 @@
-
 import { EstadoVenta, MetodoPago, Producto } from "@prisma/client";
 import { ClienteRepository } from "../domain/cliente.repository";
 import { ProductoRepository } from "../domain/producto.repositoy";
@@ -64,7 +63,7 @@ export class VentaService {
 
     }
     
-    async cambiarEstado(id:number, estado:"PAGADA"|"CANCELADA",metodoPago: "EFECTIVO" | "TRANSFERENCIA" | "TARJETA"){
+    async cambiarEstado(id:number, estado:"PAGADA"|"CANCELADA",pago:[]){
         const venta = await this.ventaRepository.getId(id)
         if (!venta) {
             throw new Error("venta no encontrado");
@@ -78,7 +77,6 @@ export class VentaService {
         if (estado === "CANCELADA") {
 
             for (const detalle of venta.detalles) {
-
                 await this.productoRepository.increment(
                 detalle.productoId,
                 detalle.cantidad
@@ -87,13 +85,10 @@ export class VentaService {
 
         }
 
-        if (!["EFECTIVO", "TRANSFERENCIA", "TARJETA"].includes(metodoPago)) {
-            throw new Error("Método de pago inválido");
-        }
 
         return this.ventaRepository.update(
         id,
-        { estado:estado, metodoPago:metodoPago },
+        { estado:estado, pago:pago },
     );
 
     }

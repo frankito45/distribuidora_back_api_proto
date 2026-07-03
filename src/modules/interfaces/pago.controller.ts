@@ -12,7 +12,7 @@ export const pagar = async (
     res:Response
 ) => {
     try{
-        
+
         const id = Number(req.params.id)
         if (isNaN(id)) {
              throw new Error("venta no puede ser nula");   
@@ -29,7 +29,7 @@ export const pagar = async (
 
     }catch(error:any){
         if (error) {
-            return res.status(400).json({message:error.mesagge})
+            return res.status(400).json({message:error.message})
         }
     }
 }

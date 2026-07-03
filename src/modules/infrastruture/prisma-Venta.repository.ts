@@ -81,7 +81,8 @@ export class PrismaVentaRepository implements VentaRepository{
                     include: {
                         producto: true
                     }
-                }
+                },
+                pagos:true
             }
         });
     }

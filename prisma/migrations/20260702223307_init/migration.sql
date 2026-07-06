@@ -1,6 +1,9 @@
 -- CreateEnum
 CREATE TYPE "EstadoVenta" AS ENUM ('PENDIENTE', 'PAGADA', 'CANCELADA');
 
+-- CreateEnum
+CREATE TYPE "MetodoPago" AS ENUM ('EFECTIVO', 'TRANSFERENCIA', 'CUENTA_CORRIENTE');
+
 -- CreateTable
 CREATE TABLE "Cliente" (
     "id" SERIAL NOT NULL,
@@ -63,6 +66,16 @@ CREATE TABLE "Venta" (
 );
 
 -- CreateTable
+CREATE TABLE "Pago" (
+    "id" SERIAL NOT NULL,
+    "monto" DOUBLE PRECISION NOT NULL,
+    "metodo" "MetodoPago" NOT NULL,
+    "ventaId" INTEGER NOT NULL,
+
+    CONSTRAINT "Pago_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "DetalleVenta" (
     "id" SERIAL NOT NULL,
     "cantidad" INTEGER NOT NULL,
@@ -91,6 +104,9 @@ ALTER TABLE "Producto" ADD CONSTRAINT "Producto_proveedorId_fkey" FOREIGN KEY ("
 
 -- AddForeignKey
 ALTER TABLE "Venta" ADD CONSTRAINT "Venta_clienteId_fkey" FOREIGN KEY ("clienteId") REFERENCES "Cliente"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Pago" ADD CONSTRAINT "Pago_ventaId_fkey" FOREIGN KEY ("ventaId") REFERENCES "Venta"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "DetalleVenta" ADD CONSTRAINT "DetalleVenta_ventaId_fkey" FOREIGN KEY ("ventaId") REFERENCES "Venta"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -21,11 +21,22 @@ model Cliente {
   telefono   String?
   email      String?  @unique
   direccion  String?
-  barrio     String?
+  
+  barrioId   Int?
+  barrio     Barrio?  @relation(fields: [barrioId], references: [id])
+
   createdAt  DateTime @default(now())
 
   ventas     Venta[]
 }
+
+model Barrio {
+  id       Int       @id @default(autoincrement())
+  nombre   String    @unique
+
+  clientes Cliente[]
+}
+
 
 model Proveedor {
   id         Int      @id @default(autoincrement())

@@ -51,7 +51,7 @@ export const createBarrio = async(
     }
 }
 
-export const update = async(
+export const updateBarrio = async(
     req:Request,
     res:Response
 ) => {

@@ -7,6 +7,6 @@ const router = Router()
 router.get('/',getAllBarrio)
 router.get('/:id',getBarrioById)
 router.post('/',createBarrio)
-router.patch('/:id',updateBarrio)
+router.patch('actualizar/:id',updateBarrio)
 
 export default router;

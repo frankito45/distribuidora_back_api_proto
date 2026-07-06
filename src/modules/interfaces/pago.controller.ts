@@ -16,8 +16,8 @@ export const pagar = async (req: Request, res: Response) => {
             throw new Error("venta no puede ser nula");
         }
 
-        const pagos = req.body.pagos;
-
+        const pagos = req.body;
+        console.log(req.body);
         if (!pagos) {
             throw new Error("Los pagos no pueden ser nulos");
         }

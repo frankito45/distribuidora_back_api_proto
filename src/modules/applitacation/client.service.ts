@@ -9,6 +9,10 @@ export class ClienteService {
         return this.repository.getAll()
     }
 
+    async getFilterBarrio(data:any){
+        return this.repository.getFiterBarrio(data)
+    }
+
     async createClient(data:any) {
         if(!data.nombre) {
             throw new Error('nombre requerido')

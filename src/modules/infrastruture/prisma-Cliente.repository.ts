@@ -7,13 +7,28 @@ export class PrismaClientRepository
 implements ClienteRepository {
 
     async getAll(){
-        return prisma.cliente.findMany();
+        return prisma.cliente.findMany({
+            include: {
+                 barrio:true
+            }
+        });
+    }
+    
+    async getFiterBarrio(params: any): Promise<any[]> {
+        return prisma.cliente.findMany({
+            where:{
+                barrio:params
+            }
+        })
     }
 
     async getId(id: number): Promise<any> {
         return prisma.cliente.findUnique({
             where: {
                 id: id
+            },
+            include:{
+                barrio:true
             }
         })
     }
@@ -21,6 +36,7 @@ implements ClienteRepository {
     async create(data: any): Promise<any> {
         return prisma.cliente.create({data})
     }
+
 
     async update(id: number,data:any): Promise<any> {
         return prisma.cliente.update({

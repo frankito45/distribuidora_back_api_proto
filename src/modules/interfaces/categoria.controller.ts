@@ -16,7 +16,7 @@ export const getCategoria = async(
         return res.json(result)
     }catch(error:any){
          res.status(400).json({
-            mesagge: error.mesagge
+            message: error.message
         })
     }
 }

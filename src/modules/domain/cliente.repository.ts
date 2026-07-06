@@ -3,6 +3,8 @@ import { Cliente } from "@prisma/client";
 export interface ClienteRepository {
     getAll(): Promise<any[]>;
 
+    getFiterBarrio(params:any): Promise<any[]>
+
     getId(id:number): Promise<Cliente>
 
     create(data:any): Promise<any>

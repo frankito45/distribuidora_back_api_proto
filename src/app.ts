@@ -6,6 +6,7 @@ import productoRoutes from './routers/producto.routers' ;
 import categoriaRouter from './routers/categoria.routers'
 import ventasRouter from './routers/venta.routrers'
 import pagoRouter from './routers/pago.routers'
+import barrioRouter from './routers/barrio.routers'
 const app = express();
 const whitelist = ['http://localhost:4200', 'https://midominio.com'];
 
@@ -33,5 +34,6 @@ app.use('/productos', productoRoutes);
 app.use('/categoria',categoriaRouter)
 app.use('/venta',ventasRouter)
 app.use('/pago',pagoRouter)
+app.use('/barrio',barrioRouter)
   
 export default app;

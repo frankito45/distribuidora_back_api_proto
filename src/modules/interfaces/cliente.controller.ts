@@ -3,6 +3,7 @@
 import { Request, Response } from "express";
 import { PrismaClientRepository } from "../infrastruture/prisma-Cliente.repository";
 import {  ClienteService } from "../applitacation/client.service";
+import { error } from "node:console";
 
 
 const repository = new PrismaClientRepository();
@@ -23,6 +24,25 @@ export const getClientes = async(
         })
     }
 }
+
+export const filtrar = async(
+    req:Request,
+    res:Response
+) => {
+    try{
+        const params = String(req.query.query)
+        if (!params) {
+            throw new Error("filtrar requiere query");
+        }
+        const cliente = await service.getFilterBarrio(params)
+        return   res.json(cliente)
+    }catch(error:any){
+        res.status(400).json({
+            mesagge: error.mesagge
+        })
+    }
+}
+
 
 
 export const createCliente = async(

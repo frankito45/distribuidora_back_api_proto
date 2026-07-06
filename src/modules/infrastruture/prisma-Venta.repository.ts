@@ -56,6 +56,7 @@ export class PrismaVentaRepository implements VentaRepository{
                 detalles:{
                     include: {
                         producto:true
+                        
                     }
                 }
             }                

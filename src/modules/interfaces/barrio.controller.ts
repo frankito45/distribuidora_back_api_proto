@@ -1,6 +1,7 @@
 import {  Request, Response } from "express";
 import { PrismaBarrioRepository } from "../infrastruture/prisma-barrio-repository";
 import { BarrioService } from "../applitacation/barrio.service";
+import router from "../../routers/clientes.routers";
 
 
 const repository = new PrismaBarrioRepository()
@@ -67,6 +68,27 @@ export const updateBarrio = async(
         return res.json(result)
         
     } catch (error:any) {
-        res.status(400).json({ message: error.message})
+       return res.status(400).json({ message: error.message})
     }
+}
+
+export const eliminarBarrio = async(
+    req:Request,
+    res:Response
+) => {
+    try{
+        const id = Number(req.params.id)
+        if (isNaN(id)) {
+            throw new Error("producto no encontrado");
+        }
+        const result = await service.deleteBarrio(id)
+
+        return res.json(result)
+
+    }catch(error:any){
+        return res.status(400).json({
+            message: error.message
+        })
+    }
+
 }

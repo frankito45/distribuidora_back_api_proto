@@ -15,17 +15,25 @@ export class PrismaBarrioRepository implements BarrioRepository{
             }
         })
     }
-
+    
     async create(data: any): Promise<Barrio> {
         return prisma.barrio.create({data})
     }
-
+    
     async update(id: number ,data: any): Promise<Barrio> {
         return prisma.barrio.update({
             where: {
                 id: id
             },data:{
                 data
+            }
+        })
+    }
+
+    async delete(id: number): Promise<any> {
+        return prisma.barrio.delete({
+            where: {
+                id:id
             }
         })
     }

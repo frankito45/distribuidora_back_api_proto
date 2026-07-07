@@ -18,6 +18,7 @@ export class BarrioService {
         return barrio
     }
 
+
     async create(data:any){
         if (!data.nombre) {
             throw new Error("nombre no puede ser nulo")
@@ -36,5 +37,13 @@ export class BarrioService {
         }
         const barrioUpdate = await this.repository.update(id, data)
         return barrioUpdate
+    }
+
+    async deleteBarrio(id:number){
+        if (isNaN(id)) {
+            throw new Error("id no puede ser nulo");
+        }
+        const barrio = await this.repository.delete(id)
+        return barrio
     }
 }

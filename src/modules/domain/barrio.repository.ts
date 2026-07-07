@@ -5,5 +5,6 @@ export interface BarrioRepository {
     getId(id:number):Promise<any>
     create(data:any):Promise<modelBarrio>
     update(id:number ,data:any):Promise<modelBarrio>
+    delete(id:number):Promise<modelBarrio>
 
 }

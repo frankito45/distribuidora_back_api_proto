@@ -33,7 +33,7 @@ router.patch(
 
 router.post('/descuento/:id',descuento)
 
-router.get('/resument/venta')
+// router.get('/resument/venta')
 
 
 

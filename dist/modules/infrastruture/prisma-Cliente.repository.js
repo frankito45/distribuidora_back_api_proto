@@ -7,12 +7,26 @@ exports.PrismaClientRepository = void 0;
 const prisma_1 = __importDefault(require("../../db/prisma"));
 class PrismaClientRepository {
     async getAll() {
-        return prisma_1.default.cliente.findMany();
+        return prisma_1.default.cliente.findMany({
+            include: {
+                barrio: true
+            }
+        });
+    }
+    async getFiterBarrio(params) {
+        return prisma_1.default.cliente.findMany({
+            where: {
+                barrio: params
+            }
+        });
     }
     async getId(id) {
         return prisma_1.default.cliente.findUnique({
             where: {
                 id: id
+            },
+            include: {
+                barrio: true
             }
         });
     }

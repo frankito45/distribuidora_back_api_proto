@@ -204,8 +204,10 @@ export const descuento = async (
     res:Response
 ) => {
     try {
-    const  ventaId = Number(req.params.id)
+    const ventaId = Number(req.params.id)
+    console.log(req.body)
     const oferta  = req.body
+    console.log(oferta)
 
     if (isNaN(ventaId)) {
         throw new Error("no se a encontrado la venta");
@@ -245,3 +247,25 @@ catch (error:any){
 //         })
 //     }
 // }
+
+export const informe = async(
+    req:Request,
+    res:Response
+) =>  {
+    try {
+        console.log(req.params)
+        const day = req.params.fecha as string
+        console.log(day)
+        if (!day) {
+            throw new Error("dia no puede ser nulo");
+        }
+        const result = await service.informexDia(day)
+
+        return res.json(result)
+        
+    } catch (error:any) {
+        if (error) {
+            return res.status(400).json({messge: error.message})
+        }
+    }
+}  

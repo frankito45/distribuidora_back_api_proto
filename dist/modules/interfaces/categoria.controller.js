@@ -6,8 +6,15 @@ const categoria_service_1 = require("../applitacation/categoria.service");
 const repository = new prisma_Categoria_repository_1.PrismaCategoriaRepository();
 const service = new categoria_service_1.CategoriaServices(repository);
 const getCategoria = async (req, res) => {
-    const result = await service.getCategoria();
-    return res.json(result);
+    try {
+        const result = await service.getCategoria();
+        return res.json(result);
+    }
+    catch (error) {
+        res.status(400).json({
+            message: error.message
+        });
+    }
 };
 exports.getCategoria = getCategoria;
 const getCategoriaId = async (req, res) => {
@@ -19,10 +26,10 @@ const getCategoriaId = async (req, res) => {
             });
         }
         const result = await service.getCategoriaId(id);
-        res.send(200).json(result);
+        res.status(200).json(result);
     }
     catch (error) {
-        res.send(400).json({
+        res.status(400).json({
             message: error.message
         });
     }

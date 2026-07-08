@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const barrio_controller_1 = require("../modules/interfaces/barrio.controller");
+const router = (0, express_1.Router)();
+router.get('/', barrio_controller_1.getAllBarrio);
+router.get('/:id', barrio_controller_1.getBarrioById);
+router.post('/', barrio_controller_1.createBarrio);
+router.patch('actualizar/:id', barrio_controller_1.updateBarrio);
+router.delete('/delete/:id', barrio_controller_1.eliminarBarrio);
+exports.default = router;

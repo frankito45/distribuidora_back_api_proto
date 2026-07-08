@@ -7,8 +7,14 @@ class VentaService {
         this.productoRepository = productoRepository;
         this.clienteRepository = clienteRepository;
     }
-    async getVentas() {
-        return this.ventaRepository.getAll();
+    async getVentas(params) {
+        return this.ventaRepository.getAll(params);
+    }
+    async getVentasPendientes() {
+        return this.ventaRepository.getFilterPendiente();
+    }
+    async getcountEstado() {
+        return this.ventaRepository.countEstadoPendiente();
     }
     async getVentaId(id) {
         const venta = await this.ventaRepository.getId(id);
@@ -18,18 +24,20 @@ class VentaService {
         return venta;
     }
     async createVenta(data) {
-        const cliente = await this.clienteRepository.getId(data.clienteId);
+        const idCliente = Number(data.clienteId);
+        const cliente = await this.clienteRepository.getId(idCliente);
         if (!cliente) {
             throw new Error("cliente inexistente");
         }
         return this.ventaRepository.create({
-            clienteId: data.clienteId,
+            clienteId: idCliente,
             total: 0,
             estado: "PENDIENTE",
-            detalles: []
+            detalles: [],
+            pagos: [],
         });
     }
-    async cambiarEstado(id, estado) {
+    async cambiarEstado(id, estado, pago) {
         const venta = await this.ventaRepository.getId(id);
         if (!venta) {
             throw new Error("venta no encontrado");
@@ -42,46 +50,36 @@ class VentaService {
                 await this.productoRepository.increment(detalle.productoId, detalle.cantidad);
             }
         }
-        return this.ventaRepository.update(id, { estado });
+        return this.ventaRepository.update(id, { estado: estado, pago: pago });
     }
-    async agregarProducto(ventaId, detalles) {
+    async agregarProducto(ventaId, detalle) {
         const venta = await this.ventaRepository.getId(ventaId);
         if (!venta) {
-            throw new Error("venta no encontrado");
+            throw new Error("Venta no encontrada");
         }
         if (venta.estado !== "PENDIENTE") {
             throw new Error("Solo se pueden modificar ventas pendientes");
         }
-        const producto = await this.productoRepository.getId(detalles.producto);
-        if (!producto) {
-            throw new Error("producto no encontrado");
+        return this.ventaRepository.agregarProducto(ventaId, detalle);
+    }
+    //eliminar producto 
+    async desAgregarProducto(ventaId, productoId) {
+        const idVenta = ventaId;
+        const venta = await this.ventaRepository.getId(idVenta);
+        if (!venta) {
+            throw new Error("Venta no encontrada");
         }
-        if (detalles.cantidad <= 0) {
-            throw new Error("la cantidad debe ser mayor a cero");
+        if (venta.estado !== "PENDIENTE") {
+            throw new Error("Solo pueden modificarse ventas pendientes");
         }
-        // Validar stock disponible
-        if (producto.stock < detalles.cantidad) {
-            throw new Error(`Stock insuficiente. Disponible: ${producto.stock}`);
+        return await this.ventaRepository.eliminarProducto(idVenta, productoId);
+    }
+    // filtro por dia
+    async filterFecha(day) {
+        if (!day) {
+            throw new Error('fecha no puede ser vacio');
         }
-        // 
-        const detalleExistente = venta.detalles.find(d => d.productoId === producto.id);
-        if (detalleExistente) {
-            // 4A. actualizar cantidad
-            await this.ventaRepository.actualizarDetalleCantidad(detalleExistente.id, detalleExistente.cantidad + detalles.cantidad, producto.precioVenta);
-        }
-        else {
-            // 4B. crear nuevo detalle
-            await this.ventaRepository.agregarDetalles(ventaId, {
-                productoId: producto.id,
-                cantidad: detalles.cantidad,
-                precio: producto.precioVenta,
-                subtotal: producto.precioVenta * detalles.cantidad
-            });
-        }
-        // Reservar stock inmediatamente
-        await this.productoRepository.decrement(producto.id, detalles.cantidad);
-        await this.ventaRepository.recalcularTotal(ventaId);
-        return await this.ventaRepository.getId(ventaId);
+        return await this.ventaRepository.getFilterAll(day);
     }
     async deleteVenta(id) {
         const venta = await this.ventaRepository.getId(id);
@@ -89,6 +87,15 @@ class VentaService {
             throw new Error('venta no encontrada');
         }
         return await this.ventaRepository.delete(id);
+    }
+    async agregarOferta(id, data) {
+        if (isNaN(id)) {
+            throw new Error("ventan no encontrada ");
+        }
+        if (!data.oferta) {
+            throw new Error("oferta no puede ser 0");
+        }
+        return await this.ventaRepository.crearOferta(id, data);
     }
 }
 exports.VentaService = VentaService;

@@ -352,6 +352,28 @@ export class PrismaVentaRepository implements VentaRepository{
         })
 
     }
+
+    async informe(inicio:Date, fin:Date): Promise<any> {
+        return await prisma.venta.findMany({
+    where: {
+        fecha: {
+            gte: inicio,
+            lt: fin
+        },
+        estado: "PAGADA"
+    },
+    include: {
+        detalles: {
+            include: {
+                producto: true
+            }
+        },
+        pagos: true,
+        cliente: true
+    }
+});
+        
+    }
     
 
 }

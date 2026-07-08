@@ -1,12 +1,13 @@
 import { Venta,DetalleVenta, Prisma, EstadoVenta } from "@prisma/client"
 import prisma from "../../db/prisma";
+import { VentaInforme } from "../shared/types/venta.types";
 
 export type VentaConDetalles =
     Venta & {
         detalles: DetalleVenta[];
     };
 
-export interface VentaRepository {
+export interface VentaRepository  {
 
     getAll(
         params:{
@@ -63,4 +64,6 @@ export interface VentaRepository {
     ventaId:number,
     oferta:number
     ): Promise<any>
+
+    informe(inicio:Date,final:Date):Promise<VentaInforme[]>
 }

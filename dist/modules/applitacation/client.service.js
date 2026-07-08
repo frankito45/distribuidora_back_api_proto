@@ -8,6 +8,9 @@ class ClienteService {
     async getClients() {
         return this.repository.getAll();
     }
+    async getFilterBarrio(data) {
+        return this.repository.getFiterBarrio(data);
+    }
     async createClient(data) {
         if (!data.nombre) {
             throw new Error('nombre requerido');

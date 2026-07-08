@@ -1,7 +1,7 @@
-import { EstadoVenta, MetodoPago, Producto } from "@prisma/client";
+import { EstadoVenta, MetodoPago, Producto, Venta } from "@prisma/client";
 import { ClienteRepository } from "../domain/cliente.repository";
 import { ProductoRepository } from "../domain/producto.repositoy";
-import { VentaRepository } from "../domain/venta.repository";
+import { VentaConDetalles, VentaRepository } from "../domain/venta.repository";
 import prisma from "../../db/prisma";
 
 type DetalleVentaInput = {
@@ -146,12 +146,92 @@ export class VentaService {
         if (isNaN(id)) {
             throw new Error("ventan no encontrada ")
         }
-        if (!data.oferta) {
+        if (isNaN(data.oferta)) {
             throw new Error("oferta no puede ser 0")
         }
-        return await this.ventaRepository.crearOferta(id,data)
-    }
+        return await this.ventaRepository.crearOferta(id,data.oferta)
+    }    
     
+
+    async informexDia(day:string){
+        const inicio:Date = new Date(day)
+        const final:Date = new Date(day)
+        inicio.setHours(0,0,0,0)
+        final.setHours(23,59,59,999)
+
+        const ventas =  await this.ventaRepository.informe(inicio,final)
+
+        const totalVentas = ventas.reduce(
+                (total, venta) => total + venta.total,
+                0
+            );
+
+            const cantidadVentas = ventas.length;
+
+            const cantidadProductos = ventas.reduce(
+                (total, venta) =>
+                    total +
+                    venta.detalles.reduce(
+                        (sub, detalle) => sub + detalle.cantidad,
+                        0
+                    ),
+                0
+            );
+
+            const costo = ventas.reduce(
+                (total, venta) =>
+                    total +
+                    venta.detalles.reduce(
+                        (sub, detalle) =>
+                            sub + (detalle.producto.precioCompra * detalle.cantidad),
+                        0
+                    ),
+                0
+            );
+
+            const ganancia = totalVentas - costo;
+
+            const efectivo = ventas.reduce(
+                (total, venta) =>
+                    total +
+                    venta.pagos
+                        .filter(p => p.metodo === "EFECTIVO")
+                        .reduce((sub, pago) => sub + pago.monto, 0),
+                0
+            );
+
+            const transferencia = ventas.reduce(
+                (total, venta) =>
+                    total +
+                    venta.pagos
+                        .filter(p => p.metodo === "TRANSFERENCIA")
+                        .reduce((sub, pago) => sub + pago.monto, 0),
+                0
+            );
+
+            const cuentaCorriente = ventas.reduce(
+                (total, venta) =>
+                    total +
+                    venta.pagos
+                        .filter(p => p.metodo === "CUENTA_CORRIENTE")
+                        .reduce((sub, pago) => sub + pago.monto, 0),
+                0
+            );
+
+            return {
+                cantidadVentas,
+                cantidadProductos,
+                totalVentas,
+                costo,
+                ganancia,
+                efectivo,
+                transferencia,
+                cuentaCorriente,
+                ventas
+            };
+        }
+
+
+}   
     
-}
 

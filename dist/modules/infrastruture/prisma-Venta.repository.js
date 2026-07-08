@@ -6,8 +6,51 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PrismaVentaRepository = void 0;
 const prisma_1 = __importDefault(require("../../db/prisma"));
 class PrismaVentaRepository {
-    async getAll() {
+    async getAll(params) {
         return prisma_1.default.venta.findMany({
+            skip: params.skip,
+            take: params.take,
+            include: {
+                cliente: true,
+                detalles: {
+                    include: {
+                        producto: true
+                    }
+                }
+            },
+            orderBy: { id: "asc" }
+        });
+    }
+    // obtener por dia
+    async getFilterAll(dato) {
+        const inicio = new Date(dato);
+        inicio.setHours(0, 0, 0, 0);
+        const fin = new Date(dato);
+        fin.setHours(23, 59, 59, 999);
+        return prisma_1.default.venta.findMany({
+            where: {
+                fecha: {
+                    gte: inicio,
+                    lt: fin
+                }
+            },
+            include: {
+                cliente: true,
+                detalles: {
+                    include: {
+                        producto: true
+                    }
+                }
+            },
+            orderBy: { fecha: "asc" }
+        });
+    }
+    // 
+    async getFilterPendiente() {
+        return prisma_1.default.venta.findMany({
+            where: {
+                estado: "PENDIENTE"
+            },
             include: {
                 cliente: true,
                 detalles: {
@@ -16,6 +59,11 @@ class PrismaVentaRepository {
                     }
                 }
             }
+        });
+    }
+    async countEstadoPendiente() {
+        return prisma_1.default.venta.count({
+            where: { estado: "PENDIENTE" }
         });
     }
     async getId(id) {
@@ -29,7 +77,8 @@ class PrismaVentaRepository {
                     include: {
                         producto: true
                     }
-                }
+                },
+                pagos: true
             }
         });
     }
@@ -63,15 +112,77 @@ class PrismaVentaRepository {
             }
         });
     }
-    async agregarDetalles(ventaId, detalle) {
-        await prisma_1.default.detalleVenta.create({
-            data: {
-                ventaId,
-                productoId: detalle.productoId,
-                cantidad: detalle.cantidad,
-                precio: detalle.precio,
-                subtotal: detalle.subtotal
+    async agregarProducto(ventaId, detalle) {
+        return prisma_1.default.$transaction(async (tx) => {
+            const venta = await tx.venta.findUnique({
+                where: { id: ventaId },
+                include: {
+                    detalles: true
+                }
+            });
+            if (!venta) {
+                throw new Error("Venta no encontrada");
             }
+            const producto = await tx.producto.findUnique({
+                where: {
+                    id: detalle.producto
+                }
+            });
+            if (!producto) {
+                throw new Error("Producto no encontrado");
+            }
+            if (producto.stock < detalle.cantidad) {
+                throw new Error(`Stock insuficiente. Disponible: ${producto.stock}`);
+            }
+            const detalleExistente = venta.detalles.find(d => d.productoId === producto.id);
+            if (detalleExistente) {
+                const nuevaCantidad = detalleExistente.cantidad + detalle.cantidad;
+                await tx.detalleVenta.update({
+                    where: {
+                        id: detalleExistente.id
+                    },
+                    data: {
+                        cantidad: nuevaCantidad,
+                        subtotal: nuevaCantidad * producto.precioVenta
+                    }
+                });
+            }
+            else {
+                await tx.detalleVenta.create({
+                    data: {
+                        ventaId,
+                        productoId: producto.id,
+                        cantidad: detalle.cantidad,
+                        precio: producto.precioVenta,
+                        subtotal: producto.precioVenta * detalle.cantidad
+                    }
+                });
+            }
+            await tx.producto.update({
+                where: {
+                    id: producto.id
+                },
+                data: {
+                    stock: {
+                        decrement: detalle.cantidad
+                    }
+                }
+            });
+            await this.recalcularTotal(tx, ventaId);
+            return tx.venta.findUnique({
+                where: {
+                    id: ventaId
+                },
+                include: {
+                    cliente: true,
+                    detalles: {
+                        include: {
+                            producto: true
+                        }
+                    },
+                    pagos: true
+                }
+            });
         });
     }
     async actualizarDetalleCantidad(detalleId, cantidad, precio) {
@@ -83,14 +194,90 @@ class PrismaVentaRepository {
             }
         });
     }
-    async recalcularTotal(ventaId) {
-        const detalles = await prisma_1.default.detalleVenta.findMany({
+    // eliminar producto de detalles
+    async eliminarProducto(ventaId, productoId) {
+        return prisma_1.default.$transaction(async (tx) => {
+            // Buscar el detalle para saber cuántas unidades devolver al stock
+            const detalle = await tx.detalleVenta.findFirst({
+                where: {
+                    ventaId,
+                    productoId
+                }
+            });
+            if (!detalle) {
+                throw new Error("El producto no existe en esta venta");
+            }
+            // Eliminar detalle de la venta
+            await tx.detalleVenta.deleteMany({
+                where: {
+                    ventaId,
+                    productoId
+                }
+            });
+            // Devolver stock al producto
+            await tx.producto.update({
+                where: {
+                    id: productoId
+                },
+                data: {
+                    stock: {
+                        increment: detalle.cantidad
+                    }
+                }
+            });
+            // Recalcular total teniendo en cuenta ofertas
+            await this.recalcularTotal(tx, ventaId);
+            // Devolver venta actualizada
+            return tx.venta.findUnique({
+                where: {
+                    id: ventaId
+                },
+                include: {
+                    cliente: true,
+                    detalles: {
+                        include: {
+                            producto: true
+                        }
+                    },
+                    pagos: true
+                }
+            });
+        });
+    }
+    async recalcularTotal(db, ventaId) {
+        var _a;
+        const detalles = await db.detalleVenta.findMany({
             where: { ventaId }
         });
-        const total = detalles.reduce((acc, d) => acc + d.subtotal, 0);
-        await prisma_1.default.venta.update({
+        const venta = await db.venta.findUnique({
+            where: { id: ventaId }
+        });
+        if (!venta) {
+            throw new Error("Venta no encontrada");
+        }
+        const subtotal = detalles.reduce((acc, d) => acc + d.subtotal, 0);
+        const total = subtotal - ((_a = venta.oferta) !== null && _a !== void 0 ? _a : 0);
+        await db.venta.update({
             where: { id: ventaId },
             data: { total }
+        });
+    }
+    async crearOferta(ventaId, oferta) {
+        return prisma_1.default.$transaction(async (tx) => {
+            await tx.venta.update({
+                where: {
+                    id: ventaId
+                },
+                data: {
+                    oferta: oferta
+                }
+            });
+            await this.recalcularTotal(tx, ventaId);
+            return tx.venta.findUnique({
+                where: {
+                    id: ventaId
+                }
+            });
         });
     }
 }

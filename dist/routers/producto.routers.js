@@ -10,5 +10,6 @@ router.get('/:id', producto_controller_1.getProductoById);
 router.patch('/:id', producto_controller_1.updateProducto);
 router.post('/', producto_controller_1.createProducto);
 router.patch('/increment/:id', producto_controller_1.increment);
+router.patch('/decrement/:id', producto_controller_1.decrement);
 router.delete('/:id', producto_controller_1.deleteProducto);
 exports.default = router;

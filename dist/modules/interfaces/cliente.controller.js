@@ -1,19 +1,42 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteCliente = exports.updateCliente = exports.getClienteById = exports.createCliente = exports.getClientes = void 0;
+exports.deleteCliente = exports.updateCliente = exports.getClienteById = exports.createCliente = exports.filtrar = exports.getClientes = void 0;
 const prisma_Cliente_repository_1 = require("../infrastruture/prisma-Cliente.repository");
 const client_service_1 = require("../applitacation/client.service");
 const repository = new prisma_Cliente_repository_1.PrismaClientRepository();
 const service = new client_service_1.ClienteService(repository);
 const getClientes = async (req, res) => {
-    const result = await service.getClients();
-    return res.json(result);
+    try {
+        const result = await service.getClients();
+        return res.json(result);
+    }
+    catch (error) {
+        res.status(400).json({
+            mesagge: error.mesagge
+        });
+    }
 };
 exports.getClientes = getClientes;
-const createCliente = async (req, res) => {
-    const result = await service.createClient(req.body);
+const filtrar = async (req, res) => {
     try {
-        res.send(200).json(result);
+        const params = String(req.query.query);
+        if (!params) {
+            throw new Error("filtrar requiere query");
+        }
+        const cliente = await service.getFilterBarrio(params);
+        return res.json(cliente);
+    }
+    catch (error) {
+        res.status(400).json({
+            mesagge: error.mesagge
+        });
+    }
+};
+exports.filtrar = filtrar;
+const createCliente = async (req, res) => {
+    try {
+        const result = await service.createClient(req.body);
+        res.status(200).json(result);
     }
     catch (error) {
         res.status(400).json({

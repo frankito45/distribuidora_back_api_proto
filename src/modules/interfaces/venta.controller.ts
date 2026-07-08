@@ -199,6 +199,33 @@ export const desAgregarProducto = async (req: Request, res: Response) => {
 
 
 
+export const descuento = async (
+    req:Request,
+    res:Response
+) => {
+    try {
+    const  ventaId = Number(req.params.id)
+    const oferta  = req.body
+
+    if (isNaN(ventaId)) {
+        throw new Error("no se a encontrado la venta");
+    }
+
+    if (!oferta) {
+        throw new Error("oferta no puede estar vacio")
+    }
+
+    const result = await service.agregarOferta(ventaId,oferta)
+    
+    return res.json(result)
+}
+catch (error:any){
+    return res.status(400).json({
+        message: error.message
+    })
+}
+}
+
 
 // export const deleteVenta = async(
 //     req:Request,

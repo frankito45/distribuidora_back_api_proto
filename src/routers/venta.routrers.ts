@@ -31,6 +31,8 @@ router.patch(
 );
 
 
+router.get('/resument/venta')
+
 
 
 export default router

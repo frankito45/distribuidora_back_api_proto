@@ -1,4 +1,4 @@
-import { EstadoVenta, Venta } from "@prisma/client";
+import { EstadoVenta, Prisma, Venta } from "@prisma/client";
 import prisma from "../../db/prisma";
 import { VentaRepository } from "../domain/venta.repository";
 import { promises } from "node:dns";
@@ -123,27 +123,105 @@ export class PrismaVentaRepository implements VentaRepository{
         })
     }
 
-    async agregarDetalles(
+    async agregarProducto(
         ventaId: number,
         detalle: {
-            productoId: number;
+            producto: number;
             cantidad: number;
-            precio: number;
-            subtotal: number;
         }
+    ) {
 
-    ): Promise<void> {
-        await prisma.detalleVenta.create({
-            data: {
-                ventaId,
-                productoId: detalle.productoId,
-                cantidad: detalle.cantidad,
-                precio: detalle.precio,
-                subtotal: detalle.subtotal
+        return prisma.$transaction(async (tx) => {
+
+            const venta = await tx.venta.findUnique({
+                where: { id: ventaId },
+                include: {
+                    detalles: true
+                }
+            });
+
+            if (!venta) {
+                throw new Error("Venta no encontrada");
             }
+
+            const producto = await tx.producto.findUnique({
+                where: {
+                    id: detalle.producto
+                }
+            });
+
+            if (!producto) {
+                throw new Error("Producto no encontrado");
+            }
+
+            if (producto.stock < detalle.cantidad) {
+                throw new Error(`Stock insuficiente. Disponible: ${producto.stock}`);
+            }
+
+            const detalleExistente = venta.detalles.find(
+                d => d.productoId === producto.id
+            );
+
+            if (detalleExistente) {
+
+                const nuevaCantidad =
+                    detalleExistente.cantidad + detalle.cantidad;
+
+                await tx.detalleVenta.update({
+                    where: {
+                        id: detalleExistente.id
+                    },
+                    data: {
+                        cantidad: nuevaCantidad,
+                        subtotal: nuevaCantidad * producto.precioVenta
+                    }
+                });
+
+            } else {
+
+                await tx.detalleVenta.create({
+                    data: {
+                        ventaId,
+                        productoId: producto.id,
+                        cantidad: detalle.cantidad,
+                        precio: producto.precioVenta,
+                        subtotal: producto.precioVenta * detalle.cantidad
+                    }
+                });
+
+            }
+
+            await tx.producto.update({
+                where: {
+                    id: producto.id
+                },
+                data: {
+                    stock: {
+                        decrement: detalle.cantidad
+                    }
+                }
+            });
+
+            await this.recalcularTotal(tx, ventaId);
+
+            return tx.venta.findUnique({
+                where: {
+                    id: ventaId
+                },
+                include: {
+                    cliente: true,
+                    detalles: {
+                        include: {
+                            producto: true
+                        }
+                    },
+                    pagos: true
+                }
+            });
+
         });
+
     }
-    
 
     async actualizarDetalleCantidad(
         detalleId: number,
@@ -160,65 +238,121 @@ export class PrismaVentaRepository implements VentaRepository{
     }
 
 
-// eliminar producto de detalles
+    // eliminar producto de detalles
+
     async eliminarProducto(ventaId: number, productoId: number) {
-            // Buscar el detalle para saber cuántas unidades se agregaron
-            const detalle = await prisma.detalleVenta.findFirst({
-                where: { ventaId, productoId }
+
+        return prisma.$transaction(async (tx) => {
+
+            // Buscar el detalle para saber cuántas unidades devolver al stock
+            const detalle = await tx.detalleVenta.findFirst({
+                where: {
+                    ventaId,
+                    productoId
+                }
             });
 
             if (!detalle) {
                 throw new Error("El producto no existe en esta venta");
-    }
-
-    // Usar transacción para asegurar consistencia
-    const [productoActualizado, VentaActualizada] = await prisma.$transaction([
-        prisma.detalleVenta.deleteMany({
-        where: { ventaId, productoId }
-        }),
-
-        prisma.producto.update({
-        where: { id: productoId },
-        data: {
-            stock: {
-            increment: detalle.cantidad
             }
-        }
-        }),
 
-        prisma.venta.update({
-            where: {id: ventaId},
-            data: {
-                total: {
-                    decrement: detalle.subtotal
+
+            // Eliminar detalle de la venta
+            await tx.detalleVenta.deleteMany({
+                where: {
+                    ventaId,
+                    productoId
                 }
-            }
-        })
-    ]);
+            });
 
 
-    // Devolver resultado útil al frontend
-    return {
-        productoActualizado,
-        VentaActualizada
-    };
+            // Devolver stock al producto
+            await tx.producto.update({
+                where: {
+                    id: productoId
+                },
+                data: {
+                    stock: {
+                        increment: detalle.cantidad
+                    }
+                }
+            });
+
+
+            // Recalcular total teniendo en cuenta ofertas
+            await this.recalcularTotal(tx, ventaId);
+
+
+            // Devolver venta actualizada
+            return tx.venta.findUnique({
+                where: {
+                    id: ventaId
+                },
+                include: {
+                    cliente: true,
+                    detalles: {
+                        include: {
+                            producto: true
+                        }
+                    },
+                    pagos: true
+                }
+            });
+
+        });
+
     }
 
 
 
-    async recalcularTotal(ventaId: number) {
-        const detalles = await prisma.detalleVenta.findMany({
+    async recalcularTotal(
+        db: Prisma.TransactionClient | typeof prisma,
+        ventaId: number
+    ) {
+
+        const detalles = await db.detalleVenta.findMany({
             where: { ventaId }
         });
 
-        const total = detalles.reduce((acc, d) => acc + d.subtotal, 0);
+        const venta = await db.venta.findUnique({
+            where: { id: ventaId }
+        });
 
-        await prisma.venta.update({
+        if (!venta) {
+            throw new Error("Venta no encontrada");
+        }
+
+        const subtotal = detalles.reduce((acc, d) => acc + d.subtotal, 0);
+
+        const total = subtotal - (venta.oferta ?? 0);
+
+        await db.venta.update({
             where: { id: ventaId },
             data: { total }
         });
     }
 
+    async crearOferta(ventaId:number,oferta:number){
+        return prisma.$transaction(async (tx)=>{
+            await tx.venta.update({
+                where: {
+                    id: ventaId
+                },
+                data: {
+                    oferta: oferta
+                }
+            })
+            await this.recalcularTotal(tx, ventaId);
+
+            return tx.venta.findUnique({
+                where: {
+                    id:ventaId
+                }
+            })
+        })
+
+    }
+    
 
 }
 

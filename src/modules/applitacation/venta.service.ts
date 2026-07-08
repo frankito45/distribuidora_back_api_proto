@@ -93,103 +93,21 @@ export class VentaService {
 
     }
 
-    async agregarProducto(ventaId: number, detalles: DetalleVentaInput) {
-    return await prisma.$transaction(async (tx) => {
+    async agregarProducto(ventaId: number, detalle: DetalleVentaInput) {
 
-        const venta = await tx.venta.findUnique({
-        where: { id: ventaId },
-        include: { detalles: true }
-        });
+        const venta = await this.ventaRepository.getId(ventaId);
 
-        if (!venta) throw new Error("venta no encontrado");
+        if (!venta) {
+            throw new Error("Venta no encontrada");
+        }
 
         if (venta.estado !== "PENDIENTE") {
-        throw new Error("Solo se pueden modificar ventas pendientes");
+            throw new Error("Solo se pueden modificar ventas pendientes");
         }
 
-        const producto = await tx.producto.findUnique({
-        where: { id: detalles.producto }
-        });
-
-        if (!producto) throw new Error("producto no encontrado");
-
-        if (detalles.cantidad <= 0) {
-        throw new Error("la cantidad debe ser mayor a cero");
-        }
-
-        if (producto.stock < detalles.cantidad) {
-        throw new Error(`Stock insuficiente. Disponible: ${producto.stock}`);
-        }
-
-        const subtotalNuevo = producto.precioVenta * detalles.cantidad;
-
-        const detalleExistente = venta.detalles.find(
-        d => d.productoId === producto.id
-        );
-
-        let cambioTotal = 0;
-
-        // 1. crear o actualizar detalle
-        if (detalleExistente) {
-
-        const nuevaCantidad = detalleExistente.cantidad + detalles.cantidad;
-        const nuevoSubtotal = nuevaCantidad * producto.precioVenta;
-
-        await tx.detalleVenta.update({
-            where: { id: detalleExistente.id },
-            data: {
-            cantidad: nuevaCantidad,
-            subtotal: nuevoSubtotal
-            }
-        });
-
-        cambioTotal = subtotalNuevo; // solo sumás lo nuevo
-
-        } else {
-
-        await tx.detalleVenta.create({
-            data: {
-            ventaId,
-            productoId: producto.id,
-            cantidad: detalles.cantidad,
-            precio: producto.precioVenta,
-            subtotal: subtotalNuevo
-            }
-        });
-
-        cambioTotal = subtotalNuevo;
-        }
-
-        // 2. actualizar stock (ATÓMICO)
-        await tx.producto.update({
-        where: { id: producto.id },
-        data: {
-            stock: {
-            decrement: detalles.cantidad
-            }
-        }
-        });
-
-        // 3. actualizar total incremental (MUCHO MÁS RÁPIDO)
-        await tx.venta.update({
-        where: { id: ventaId },
-        data: {
-            total: {
-            increment: cambioTotal
-            }
-        }
-        });
-
-        // 4. devolver venta actualizada
-        return tx.venta.findUnique({
-        where: { id: ventaId },
-        include: {
-            cliente: true,
-            detalles: { include: { producto: true } }
-        }
-        });
-    });
+        return this.ventaRepository.agregarProducto(ventaId, detalle);
     }
+
     //eliminar producto 
     async desAgregarProducto(ventaId:number,productoId:number){
         const idVenta = ventaId
@@ -197,11 +115,15 @@ export class VentaService {
         if (!venta) {
             throw new Error("Venta no encontrada");
         }
-        console.log(venta.estado)
+        
+        if (venta.estado !== "PENDIENTE") {
+        throw new Error("Solo pueden modificarse ventas pendientes");
+        }
 
 
         return await this.ventaRepository.eliminarProducto(idVenta,productoId)
     }
+
     // filtro por dia
     async filterFecha(day:any){
         if(!day){
@@ -218,6 +140,16 @@ export class VentaService {
             throw new Error('venta no encontrada')
         }
         return await this.ventaRepository.delete(id)
+    }
+
+    async agregarOferta(id:number,data:any){
+        if (isNaN(id)) {
+            throw new Error("ventan no encontrada ")
+        }
+        if (!data.oferta) {
+            throw new Error("oferta no puede ser 0")
+        }
+        return await this.ventaRepository.crearOferta(id,data)
     }
     
     

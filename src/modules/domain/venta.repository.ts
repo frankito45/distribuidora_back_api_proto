@@ -1,4 +1,5 @@
-import { Venta,DetalleVenta } from "@prisma/client"
+import { Venta,DetalleVenta, Prisma, EstadoVenta } from "@prisma/client"
+import prisma from "../../db/prisma";
 
 export type VentaConDetalles =
     Venta & {
@@ -36,16 +37,6 @@ export interface VentaRepository {
         id:number
     ): Promise<Venta>;
 
-    agregarDetalles(
-        ventaId:number,
-        detalles:{
-        productoId: number;
-        cantidad: number;
-        precio: number;
-        subtotal: number;
-    }
-    ): Promise<void>;
-
     actualizarDetalleCantidad(
         detalleId: number,
         cantidad: number,
@@ -56,7 +47,20 @@ export interface VentaRepository {
         ventaId:number,
         productoId:number
     ): Promise<any>
+    
+    agregarProducto( 
+        ventaId: number,
+        detalle: {
+            producto: number;
+            cantidad: number;
+        }):Promise<any>
 
 
-    recalcularTotal(ventaId: number): Promise<void>;
+    recalcularTotal(bd: Prisma.TransactionClient | typeof prisma,
+        ventaId: number): Promise<void>;
+
+    crearOferta(
+    ventaId:number,
+    oferta:number
+    ): Promise<any>
 }

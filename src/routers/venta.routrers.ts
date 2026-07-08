@@ -31,7 +31,7 @@ router.patch(
 );
 
 
-router.post('/descuento/:id',descuento)
+router.patch('/descuento/:id',descuento)
 
 // router.get('/resument/venta')
 

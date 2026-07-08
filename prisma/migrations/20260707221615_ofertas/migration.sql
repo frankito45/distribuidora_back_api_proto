@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Venta" ADD COLUMN     "oferta" DOUBLE PRECISION DEFAULT 0;

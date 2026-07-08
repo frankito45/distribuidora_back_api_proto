@@ -84,12 +84,15 @@ model Venta {
   total       Float
   estado      EstadoVenta @default(PENDIENTE)
 
+
   clienteId   Int?
   cliente     Cliente? @relation(fields: [clienteId], references: [id])
 
   detalles    DetalleVenta[]
 
   pagos       Pago[]
+
+  oferta      Float  @default(0)
 }
 
 model Pago {

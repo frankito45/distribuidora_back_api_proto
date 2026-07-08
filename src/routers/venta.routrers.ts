@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getVentas, getVentaById, createVenta, agregarProductos, cambiarEstado, countPendiente, getDay, getFilterPendiente, desAgregarProducto  } from "../modules/interfaces/venta.controller";
+import { getVentas, getVentaById, createVenta, agregarProductos, cambiarEstado, countPendiente, getDay, getFilterPendiente, desAgregarProducto, descuento  } from "../modules/interfaces/venta.controller";
 
 
 const router = Router()
@@ -30,6 +30,8 @@ router.patch(
     cambiarEstado
 );
 
+
+router.post('/descuento/:id',descuento)
 
 router.get('/resument/venta')
 

@@ -1,6 +1,6 @@
 import { Venta,DetalleVenta, Prisma, EstadoVenta } from "@prisma/client"
 import prisma from "../../db/prisma";
-import { VentaInforme } from "../shared/types/venta.types";
+import { VentaId, VentaInforme } from "../shared/types/venta.types";
 
 export type VentaConDetalles =
     Venta & {
@@ -23,7 +23,7 @@ export interface VentaRepository  {
 
     getId(
         id:number
-    ): Promise<VentaConDetalles | null>;
+    ): Promise<VentaId | null>;
 
     create(
         data:any

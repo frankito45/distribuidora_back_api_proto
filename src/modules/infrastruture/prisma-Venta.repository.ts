@@ -18,7 +18,7 @@ export class PrismaVentaRepository implements VentaRepository{
                     }
                 }
             },
-            orderBy: { id: "asc" }
+            orderBy: { id: "desc" }
         });
     }
     // obtener por dia
@@ -77,13 +77,18 @@ export class PrismaVentaRepository implements VentaRepository{
                 id
             },
             include: {
-                cliente: true,
+                cliente: {
+                    include:{
+                        barrio:true
+                    }
+                },
                 detalles: {
                     include: {
                         producto: true
                     }
                 },
                 pagos:true
+            
             }
         });
     }

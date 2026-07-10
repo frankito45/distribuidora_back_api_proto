@@ -154,10 +154,13 @@ export class VentaService {
     
 
     async informexDia(day:string){
-        const inicio:Date = new Date(day)
-        const final:Date = new Date(day)
-        inicio.setHours(0,0,0,0)
-        final.setHours(23,59,59,999)
+        console.log('data:',day)
+    
+        const [year, month, dayOfMonth] = day.split("-").map(Number);
+
+    const inicio = new Date(year, month - 1, dayOfMonth, 0, 0, 0, 0);
+    const final = new Date(year, month - 1, dayOfMonth, 23, 59, 59, 999);
+
 
         const ventas =  await this.ventaRepository.informe(inicio,final)
 

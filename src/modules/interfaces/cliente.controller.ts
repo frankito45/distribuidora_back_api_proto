@@ -25,24 +25,27 @@ export const getClientes = async(
     }
 }
 
-export const filtrar = async(
-    req:Request,
-    res:Response
+export const filtrar = async (
+  req: Request,
+  res: Response
 ) => {
-    try{
-        const params = String(req.query.query)
-        if (!params) {
-            throw new Error("filtrar requiere query");
-        }
-        const cliente = await service.getFilterBarrio(params)
-        return   res.json(cliente)
-    }catch(error:any){
-        res.status(400).json({
-            mesagge: error.mesagge
-        })
-    }
-}
+  try {
+    const barrioId = Number(req.query.barrioId);
 
+    if (isNaN(barrioId)) {
+      throw new Error("barrioId inválido");
+    }
+
+    const clientes = await service.getFilterBarrio(barrioId);
+
+    return res.json(clientes);
+
+  } catch (error: any) {
+    return res.status(400).json({
+      message: error.message
+    });
+  }
+}
 
 
 export const createCliente = async(

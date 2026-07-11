@@ -14,13 +14,16 @@ implements ClienteRepository {
         });
     }
     
-    async getFiterBarrio(params: any): Promise<any[]> {
-        return prisma.cliente.findMany({
-            where:{
-                barrio:params
-            }
-        })
+async getFilterBarrio(barrioId: number) {
+  return prisma.cliente.findMany({
+    where: {
+      barrioId: barrioId
+    },
+    include: {
+      barrio: true
     }
+  });
+}
 
     async getId(id: number): Promise<any> {
         return prisma.cliente.findUnique({

@@ -9,9 +9,9 @@ export class ClienteService {
         return this.repository.getAll()
     }
 
-    async getFilterBarrio(data:any){
-        return this.repository.getFiterBarrio(data)
-    }
+async getFilterBarrio(barrioId: number) {
+  return this.repository.getFilterBarrio(barrioId);
+}
 
     async createClient(data:any) {
         if(!data.nombre) {

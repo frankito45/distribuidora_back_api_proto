@@ -4,7 +4,7 @@ import { getClientes,createCliente,updateCliente, deleteCliente, getClienteById,
 const router = Router();
 
 router.get('/', getClientes);
-router.get('filtrar',filtrar)
+router.get('/filtrar',filtrar)
 router.post('/', createCliente);
 router.get('/:id', getClienteById);
 router.patch('/actualizar/:id', updateCliente);

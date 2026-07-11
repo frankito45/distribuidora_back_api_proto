@@ -11,12 +11,17 @@ export class PrismaVentaRepository implements VentaRepository{
             take:params.take,
             include: {
                 
-                cliente: true,
+                cliente: {
+                    include:{
+                        barrio:true
+                    }
+                },
                 detalles: {
                     include: {
                         producto: true
                     }
-                }
+                },
+                pagos:true
             },
             orderBy: { id: "desc" }
         });

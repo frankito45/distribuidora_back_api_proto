@@ -1,4 +1,4 @@
-import { Venta,DetalleVenta, Prisma, EstadoVenta } from "@prisma/client"
+import { Venta,DetalleVenta, Prisma, EstadoVenta, Barrio } from "@prisma/client"
 import prisma from "../../db/prisma";
 import { VentaId, VentaInforme } from "../shared/types/venta.types";
 
@@ -13,7 +13,7 @@ export interface VentaRepository  {
         params:{
             skip:number, 
             take:number
-        }): Promise<VentaConDetalles[]>;
+        }): Promise<VentaId[]>;
 
     getFilterAll(dato:any): Promise<VentaConDetalles[]>
 

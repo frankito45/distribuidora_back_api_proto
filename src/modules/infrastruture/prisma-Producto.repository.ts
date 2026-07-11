@@ -81,7 +81,7 @@ implements ProductoRepository {
     return prisma.producto.findMany({
         where: {
         nombre: {
-            contains: query,
+            startsWith: query,
             mode: 'insensitive'
         }
         },

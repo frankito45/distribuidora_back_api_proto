@@ -57,13 +57,18 @@ export class PrismaVentaRepository implements VentaRepository{
                 estado: "PENDIENTE"
             },
             include:{
-                cliente:true,
+                cliente:{
+                    include:{
+                        barrio:true
+                    }
+                },
                 detalles:{
                     include: {
                         producto:true
                         
                     }
                 }
+                
             }                
         })
     }

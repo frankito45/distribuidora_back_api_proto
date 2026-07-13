@@ -14,6 +14,7 @@
 //   try {
 //     const filePath = path.join(
 //       process.cwd(),
+
 //       "src",
 //       "scripts",
 //       "stock_categorias.xlsx"

@@ -181,6 +181,38 @@ export class VentaService {
                 0
             );
 
+            // Productos vendidos
+const productosVendidosMap = new Map<
+    number,
+    {
+        productoId: number;
+        nombre: string;
+        cantidad: number;
+        totalVendido: number;
+    }
+>();
+
+    for (const venta of ventas) {
+        for (const detalle of venta.detalles) {
+            const existente = productosVendidosMap.get(detalle.productoId);
+
+            if (existente) {
+                existente.cantidad += detalle.cantidad;
+                existente.totalVendido += detalle.cantidad * detalle.precio;
+            } else {
+                productosVendidosMap.set(detalle.productoId, {
+                    productoId: detalle.productoId,
+                    nombre: detalle.producto.nombre,
+                    cantidad: detalle.cantidad,
+                    totalVendido: detalle.cantidad * detalle.precio,
+                });
+            }
+        }
+    }
+
+    const productosVendidos = Array.from(productosVendidosMap.values());
+            
+
             const costo = ventas.reduce(
                 (total, venta) =>
                     total +
@@ -230,7 +262,8 @@ export class VentaService {
                 efectivo,
                 transferencia,
                 cuentaCorriente,
-                ventas
+                ventas,
+                productosVendidos
             };
         }
 

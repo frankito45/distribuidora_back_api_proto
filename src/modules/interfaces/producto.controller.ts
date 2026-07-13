@@ -121,6 +121,8 @@ export const updateProducto = async(
     res:Response
 ) => {
     try {
+        
+
         console.log('resp')
         const id = Number(req.params.id);
         const data = req.body;

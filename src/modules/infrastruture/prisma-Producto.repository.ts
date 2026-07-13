@@ -8,7 +8,9 @@ implements ProductoRepository {
 
     async getAll(){
         return prisma.producto.findMany(
-            {
+            {   where: {
+                activo : true
+                },
                 include:{
                     categoria:true,
                     proveedor:true
@@ -45,9 +47,12 @@ implements ProductoRepository {
     }
 
     async delete(id:number): Promise<any> {
-        return prisma.producto.delete({
+        return prisma.producto.update({
             where:{
                 id: id
+            },
+            data:{
+                activo:false
             }
         })
     }

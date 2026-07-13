@@ -67,6 +67,8 @@ model Producto {
   stock            Int        @default(0)
   activo           Boolean    @default(true)
   createdAt        DateTime   @default(now())
+  
+  updatedAt        DateTime   @default(now()) @updatedAt
 
   categoriaId      Int
   categoria         Categoria @relation(fields: [categoriaId], references: [id])
@@ -119,6 +121,20 @@ model DetalleVenta {
 
   productoId   Int
   producto     Producto  @relation(fields: [productoId], references: [id])
+}
+
+model Usuario{
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  email     String   @unique
+  password  String
+  rol       RolUsuario @default(EMPLEADO)
+  createdAt DateTime @default(now())
+}
+
+enum RolUsuario {
+  ADMIN
+  EMPLEADO
 }
 
 enum EstadoVenta {

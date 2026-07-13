@@ -7,6 +7,8 @@ import categoriaRouter from './routers/categoria.routers'
 import ventasRouter from './routers/venta.routrers'
 import pagoRouter from './routers/pago.routers'
 import barrioRouter from './routers/barrio.routers'
+import userRouter from './routers/user.routers'
+import { auth } from './modules/middleware/auth.middleware';
 const app = express();
 const whitelist = ['http://localhost:4200', 'https://midominio.com'];
 
@@ -29,11 +31,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // app.use('/test', testRoutes); 
-app.use('/clientes', clienteRoutes);
-app.use('/productos', productoRoutes);
-app.use('/categoria',categoriaRouter)
-app.use('/venta',ventasRouter)
-app.use('/pago',pagoRouter)
-app.use('/barrio',barrioRouter)
+
+app.use("/auth", userRouter);
+app.use('/clientes', auth,clienteRoutes);
+app.use('/productos',auth, productoRoutes);
+app.use('/categoria',auth ,categoriaRouter)
+app.use('/venta',auth, ventasRouter)
+app.use('/pago',auth, pagoRouter)
+app.use('/barrio',auth, barrioRouter)
   
 export default app;
